@@ -1,5 +1,10 @@
 import subprocess
 import json
+import os
+
+print("cwd:", os.getcwd())
+print("files:", os.listdir())
+
 
 #1.이슈 가져오기 
     # issue 들 중에서 AI:ready 라벨 있는 것들 가져오기 
@@ -13,9 +18,10 @@ def get_issues(repo:str):
             text=True,
             check=True
         )
+        return result
     except subprocess.CalledProcessError as e:
         print(e.stderr)
-    return result
+  
 
 #get issue contents
 def get_issue_content(issue_num:str):
