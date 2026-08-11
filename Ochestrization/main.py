@@ -1,5 +1,5 @@
 
-from gh_job import *
+from Ochestrization.gh_job import *
 
 if __name__ == "__main__":
     REPO = "gpfvm/llm-eval-system"

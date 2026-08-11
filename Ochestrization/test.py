@@ -1,4 +1,4 @@
-from gh_job import *
+from Ochestrization.gh_job import *
 
 REPO = "gpfvm/llm-eval-system"
 REPO_PATH = "/Users/seunghyuns/Documents/llm-eval-system"
