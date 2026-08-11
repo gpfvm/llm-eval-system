@@ -44,7 +44,7 @@ def get_issue_content(repo: str, issue_num: int) -> dict:
 # ---------- 2. repo 준비 ----------
 
 def default_repo_path(repo: str) -> Path:
-    """'gpfvm/llm-eval-system' → 오케스트레이터 부모 폴더/llm-eval-system 로 자동 계산."""
+    """ 오케스트레이터 부모 폴더/llm-eval-system 로 자동 계산."""
     repo_name = repo.split("/")[-1]
     return PARENT_DIR / repo_name
 
