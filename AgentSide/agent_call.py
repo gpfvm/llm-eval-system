@@ -35,16 +35,23 @@ def invoke_cline(repo_path: Path, prompt: str, timeout: int = 900) -> str:
     Cline이 직접 파일을 수정하므로 리턴값은 실행 로그(stdout)이고,
     실제 변경 여부는 호출 후 get_changed_files()로 오케스트레이터가 확인한다.
     """
-    logger.info("Cline has been called")
+    logger.info("Starting Cline...")
+
     result = subprocess.run(
-        ["cline", "--yolo", prompt],
+        [
+            "cline",
+            "-v",
+            "-P", "ollama",
+            "-m", "qwen3:8b",
+            prompt,
+        ],
         cwd=str(repo_path),
-        #capture_output=True,
         text=True,
         timeout=timeout,
     )
-    logger.info("Cline return code: %s", result.returncode)
 
+    logger.info("Cline finished: %s", result.returncode)
+    
     if result.returncode != 0:
         raise RuntimeError(f"Cline invocation failed with return code {result.returncode}")
     logger.info("Cline finished")
