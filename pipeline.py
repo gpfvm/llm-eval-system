@@ -13,14 +13,15 @@ def run_pipeline(repo: str, agent_name: str, model_name: str, issue_num: int) ->
     branch_name = branch_cut(path, agent_name, model_name, issue_num)
 
     # Phase 1: Cline 연동 전까지는 더미 변경으로 대체
-    temp_code_change(path)
-    push_branch(path, branch_name)
+    #temp_code_change(path)
+    
 
     #Phas 2: Cline 연동
 
     prompt = build_prompt(issue)
     invoke_cline(path,prompt)
 
+    push_branch(path, branch_name)
 
     return create_pr(
         path, repo,
