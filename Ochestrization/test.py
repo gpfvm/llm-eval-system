@@ -7,10 +7,22 @@ MODEL_NAME = "qwen_3"
 
 #test get_issues
 
-issues = gh_job.get_issues("llm-eval-system")
+issues = get_issues(REPO)
 print(issues)
 
-# test get_
-for issue in issues:
-    content = gh_job.get_issue_content(issue["number"])
-    print(content)
+# test get_issue_content
+content = get_issue_content(issues[0])
+print(content)
+
+#test prepare_repo
+path = prepare_repo(REPO,REPO_PATH)
+print(path)
+
+# test sync_main 
+sync_main(path)
+
+#test branch cut
+branch_cut(path, AGENT_NAME, MODEL_NAME, issues[0])
+
+
+
