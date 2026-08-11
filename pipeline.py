@@ -1,4 +1,5 @@
 from Ochestrization.gh_job import *
+from AgentSide.agent_call import *
 
 # ---------- 6. 오케스트레이터 진입점 ----------
 
@@ -16,6 +17,10 @@ def run_pipeline(repo: str, agent_name: str, model_name: str, issue_num: int) ->
     push_branch(path, branch_name)
 
     #Phas 2: Cline 연동
+
+    prompt = build_prompt(issue)
+    invoke_cline(path,prompt)
+
 
     return create_pr(
         path, repo,
