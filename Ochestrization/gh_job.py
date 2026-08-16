@@ -109,6 +109,17 @@ def temp_code_change(repo_path: Path) -> None:
 """
 수정사항 git hash 확보 
 """
+def get_commit_sha(repo_path: Path) -> str:
+    result = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo_path,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return result.stdout.strip()
+
+
 def commit_changes(repo_path: Path, message: str) -> str:
     subprocess.run(
         ["git", "add", "."],
@@ -122,15 +133,7 @@ def commit_changes(repo_path: Path, message: str) -> str:
         check=True,
     )
 
-    result = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=repo_path,
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-
-    return result.stdout.strip()
+    return get_commit_sha(repo_path)
 
 # ---------- 6. commit diff / changed files 수집 ----------
 

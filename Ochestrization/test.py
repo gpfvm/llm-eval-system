@@ -25,3 +25,8 @@ print(path)
 #branch_cut(path, AGENT_NAME, MODEL_NAME, issues[0])
 
 
+SHA = get_commit_sha(path)
+diff = get_commit_diff(path,SHA)
+
+print(SHA)
+print(diff)
