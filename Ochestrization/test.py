@@ -1,9 +1,9 @@
 from Ochestrization.gh_job import *
 
-REPO = "gpfvm/llm-eval-system"
-REPO_PATH = "/Users/seunghyuns/Documents/llm-eval-system"
+REPO = "gpfvm/test_repo"
 AGENT_NAME = "cline"
 MODEL_NAME = "qwen_3"
+REPO_PATH = prepare_repo(REPO)
 
 #test get_issues
 
@@ -19,10 +19,10 @@ path = prepare_repo(REPO,REPO_PATH)
 print(path)
 
 # test sync_main 
-sync_main(path)
+#sync_main(path)
 
 #test branch cut
-branch_cut(path, AGENT_NAME, MODEL_NAME, issues[0])
+#branch_cut(path, AGENT_NAME, MODEL_NAME, issues[0])
 
 
 

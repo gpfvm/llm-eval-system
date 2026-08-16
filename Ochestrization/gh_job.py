@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 # 오케스트레이터 스크립트 기준 경로. 대상 repo들은 이 스크립트의 "부모 폴더"에
 # 형제 디렉토리로 clone된다고 가정 (Mac/Windows 무관, 하드코딩 경로 불필요)
-PROJECT_ROOT = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 PARENT_DIR = PROJECT_ROOT.parent
 
 
@@ -113,19 +113,60 @@ def push_branch(repo_path: Path, branch_name: str) -> None:
     logger.info(f"Pushed branch {branch_name}")
 
 
-# ---------- 5. PR 생성 ----------
+# ---------- 5. 수정사항 Git Commit ----------
+"""
+수정사항 git hash 확보 
+"""
+def commit_changes(repo_path: Path, message: str) -> str:
+    subprocess.run(
+        ["git", "add", "."],
+        cwd=repo_path,
+        check=True,
+    )
 
-def create_pr(repo_path: Path, repo: str, title: str, body: str) -> str:
-    """PR을 생성하고 URL을 반환.
-    --title/--body 없이 호출하면 gh가 대화형 프롬프트로 빠져서 스크립트가 멈추므로 필수 인자로 강제.
-    """
+    subprocess.run(
+        ["git", "commit", "-m", message],
+        cwd=repo_path,
+        check=True,
+    )
+
     result = subprocess.run(
-        ["gh", "pr", "create", "--repo", repo, "--title", title, "--body", body, "--base", "mvp_dev"],
-        cwd=str(repo_path),
+        ["git", "rev-parse", "HEAD"],
+        cwd=repo_path,
         capture_output=True,
         text=True,
         check=True,
     )
+
+    return result.stdout.strip()
+
+# ---------- 6. commit diff / changed files 수집 ----------
+
+def get_commit_diff(repo_path: Path, commit_sha: str) -> str:
+    result = subprocess.run(
+        ["git", "show", "--format=", commit_sha],
+        cwd=repo_path,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return result.stdout.strip()
+
+
+# ---------- 7. PR 생성 ----------
+
+def create_pr(repo_path: Path, repo: str, title: str, body: str) -> str:
+    result = subprocess.run(
+        ["gh", "pr", "create", "--repo", repo, "--title", title, "--body", body, "--base", "mvp_dev"],
+        cwd=repo_path,
+        capture_output=True,
+        text=True,
+    )
+
+    if result.returncode != 0:
+        logger.error(f"gh pr create failed: {result.stderr}")
+        raise RuntimeError(result.stderr)
+
     pr_url = result.stdout.strip()
     logger.info(f"Created PR: {pr_url}")
     return pr_url

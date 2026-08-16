@@ -4,7 +4,11 @@ from AgentSide.agent_call import *
 # ---------- 6. 오케스트레이터 진입점 ----------
 
 def run_pipeline(repo: str, agent_name: str, model_name: str, issue_num: int) -> str:
+
+
+    # ================= get repo, issue, branch cut =====================
     path = prepare_repo(repo)
+    print(path)
     sync_main(path)
 
     issue = get_issue_content(repo, issue_num)
@@ -17,9 +21,17 @@ def run_pipeline(repo: str, agent_name: str, model_name: str, issue_num: int) ->
     
 
     #Phas 2: Cline 연동
+    # ================= call cline and write the acutal code =====================
 
     prompt = build_prompt(issue)
     invoke_cline(path,prompt)
+
+ 
+    # ================= Git Add commit get diff  =====================
+
+    commit_changes(path,f" #{issue_num}: {issue['title']}")
+
+    # ================= Push branch Create PR   =====================
 
     push_branch(path, branch_name)
 
