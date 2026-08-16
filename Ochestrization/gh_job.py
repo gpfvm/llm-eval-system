@@ -105,14 +105,6 @@ def temp_code_change(repo_path: Path) -> None:
     logger.info("Committed dummy change")
 
 
-def push_branch(repo_path: Path, branch_name: str) -> None:
-    subprocess.run(
-        ["git", "-C", str(repo_path), "push", "-u", "origin", branch_name],
-        check=True,
-    )
-    logger.info(f"Pushed branch {branch_name}")
-
-
 # ---------- 5. 수정사항 Git Commit ----------
 """
 수정사항 git hash 확보 
@@ -151,6 +143,14 @@ def get_commit_diff(repo_path: Path, commit_sha: str) -> str:
         check=True,
     )
     return result.stdout.strip()
+
+
+def push_branch(repo_path: Path, branch_name: str) -> None:
+    subprocess.run(
+        ["git", "-C", str(repo_path), "push", "-u", "origin", branch_name],
+        check=True,
+    )
+    logger.info(f"Pushed branch {branch_name}")
 
 
 # ---------- 7. PR 생성 ----------

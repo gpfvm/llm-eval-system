@@ -26,7 +26,7 @@ def run_pipeline(repo: str, agent_name: str, model_name: str, issue_num: int) ->
     prompt = build_prompt(issue)
     invoke_cline(path,prompt)
 
- 
+
     # ================= Git Add commit get diff  =====================
 
     commit_changes(path,f" #{issue_num}: {issue['title']}")
