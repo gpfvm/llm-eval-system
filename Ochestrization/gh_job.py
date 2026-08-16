@@ -157,7 +157,7 @@ def get_commit_diff(repo_path: Path, commit_sha: str) -> str:
 
 def create_pr(repo_path: Path, repo: str, title: str, body: str) -> str:
     result = subprocess.run(
-        ["gh", "pr", "create", "--repo", repo, "--title", title, "--body", body, "--base", "mvp_dev"],
+        ["gh", "pr", "create", "--repo", repo, "--title", title, "--body", body, "--base", "main"],
         cwd=repo_path,
         capture_output=True,
         text=True,
