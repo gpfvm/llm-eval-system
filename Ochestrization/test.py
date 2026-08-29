@@ -1,32 +1,93 @@
+import pytest
 from Ochestrization.gh_job import *
+import subprocess
+from unittest.mock import patch
 
 REPO = "gpfvm/test_repo"
 AGENT_NAME = "cline"
 MODEL_NAME = "qwen_3"
-REPO_PATH = prepare_repo(REPO)
 
-#test get_issues
+# create mock origin repo at local temp folder
+@pytest.fixture(scope="module")
+def repo_path(tmp_path_factory):
 
-issues = get_issues(REPO)
-print(issues)
+    """
+        1. create a mock github repo at local machine 
+        2. make initial commit 
+        3. mock clone 
+        4. return mock repo path 
+        
+    """
+    tmp = tmp_path_factory.mktemp("dryrun")
 
-# test get_issue_content
-content = get_issue_content(REPO,issues[0])
-print(content)
+    origin = tmp / "origin"
+    subprocess.run(["git", "init", str(origin)], check=True)
+    (origin / "README.md").write_text("init\n")
+    subprocess.run(["git", "-C", str(origin), "add", "."], check=True)
+    subprocess.run(
+        ["git", "-C", str(origin),
+         "-c", "user.email=test@test.com", "-c", "user.name=test",
+         "commit", "-m", "init"],
+        check=True,
+    )
 
-#test prepare_repo
-path = prepare_repo(REPO,REPO_PATH)
-print(path)
+    work = tmp / "work"
+    subprocess.run(["git", "clone", str(origin), str(work)], check=True)
 
-# test sync_main 
-#sync_main(path)
-
-#test branch cut
-#branch_cut(path, AGENT_NAME, MODEL_NAME, issues[0])
+    path = work
+    assert path.exists(), "returned not existing path"
+    assert (path / ".git").exists(), "returned not git existing path"
+    return path
 
 
-SHA = get_commit_sha(path)
-diff = get_commit_diff(path,SHA)
+# test sync-main 
+def test_sync_main(repo_path):
+    sync_main(repo_path)
 
-print(SHA)
-print(diff)
+    current_branch = subprocess.run(["git", "-C", str(repo_path),"branch", "--show-current"], capture_output=True, text=True, check=True)
+
+    assert current_branch.stdout.strip() == "main", "current branch is not main"
+
+#mocking subprocess.run contains "gh" command 
+@patch("Ochestrization.gh_job.subprocess.run")
+def test_get_issues(mock_run):
+    mock_run.return_value = subprocess.CompletedProcess(
+    args=[], returncode=0,
+    stdout='[{"number": 1}, {"number": 2}]',
+    stderr="",
+    )
+    issues = get_issues(REPO)
+
+    assert len(issues) > 0 , "issues is empty list"
+    assert all(isinstance(n,int) for n in issues) , "no int type"  
+    assert isinstance(issues,list)
+
+@patch("Ochestrization.gh_job.subprocess.run")
+def test_get_issue_content(mock_run):
+    mock_run.return_value = subprocess.CompletedProcess(
+        args=[], returncode=0,
+        stdout='{"title": "issue title", "body": "issue body"}',
+        stderr="",
+    )
+    content = get_issue_content(REPO,1)
+
+    assert "title" in content, "contents dose not have key 'title'"
+    assert content["title"], "title is empty string"
+
+    assert "body" in content, "contents dose not have key 'body'"
+    assert content["body"], "body is empty string"
+
+#teset_branch_cut
+def test_branch_cut(repo_path):
+    """
+    branch_cut returns branch name in str type
+    validate name convention of branch 
+    validate branch is checkedout  
+    """
+    branch_name = branch_cut(repo_path,AGENT_NAME,MODEL_NAME,1)
+    current_branch = subprocess.run(["git", "-C", str(repo_path),"branch", "--show-current"], capture_output=True, text=True, check=True)
+
+    assert branch_name == f"{AGENT_NAME}_{MODEL_NAME}_issue1"
+    assert current_branch.stdout.strip() == branch_name
+    
+
