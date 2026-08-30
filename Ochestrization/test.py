@@ -91,3 +91,39 @@ def test_branch_cut(repo_path):
     assert current_branch.stdout.strip() == branch_name
     
 
+#test_get_commit_sha and commmit_changes 
+def test_commit_and_diff(repo_path):
+    filename = "AGENT_TEST.md"
+    dummy_file = repo_path / filename
+    dummy_file.write_text("agent pipeline smoke test\n")
+    sha = commit_changes(repo_path,"#1: AGENT_TEST")
+
+    assert len(sha) == 40, "SHA must be 40 digit+alphabet"
+    assert all(c in "0123456789abcdef" for c in sha), "SHA is not hex format"
+
+    diff = get_commit_diff(repo_path,sha)
+
+    assert filename in diff, "file should be shown in diff"
+
+#push_branch test 
+@patch("Ochestrization.gh_job.subprocess.run")
+def test_push_branch(mock_run,repo_path):
+        mock_run.return_value = subprocess.CompletedProcess(
+        args=[], returncode=0,)
+        push_branch(repo_path,"mock_branch")
+
+        called_args= mock_run.call_args[0][0]
+        assert "push" in called_args, "push command is not included"
+        assert "mock_branch" in called_args, "branch name is incorrect"
+
+@patch("Ochestrization.gh_job.subprocess.run")
+def test_create_pr(mock_run,repo_path):
+    mock_run.return_value= subprocess.CompletedProcess(
+        args=[], returncode=0,
+        stdout="https://github.com/mock_repo/pull/1\n",
+        stderr="",
+    )
+    mock_result = create_pr(repo_path, "mock_repo", "title", "body")
+
+    mock_url = mock_result
+    assert mock_url == "https://github.com/mock_repo/pull/1", "pr URL is not correct."
