@@ -77,6 +77,16 @@ def test_get_issue_content(mock_run):
     assert "body" in content, "contents dose not have key 'body'"
     assert content["body"], "body is empty string"
 
+
+# test get_issue_contents_failure case 
+@patch("Ochestrization.gh_job.subprocess.run")
+def test_get_issue_content_invalid_issue(mock_run):
+    mock_run.side_effect = subprocess.CalledProcessError(
+        returncode=1, cmd=["gh", "issue", "view"], stderr="issue not found"
+    )
+    with pytest.raises(RuntimeError):
+        get_issue_content(REPO, 99999)
+
 #teset_branch_cut
 def test_branch_cut(repo_path):
     """
@@ -127,3 +137,15 @@ def test_create_pr(mock_run,repo_path):
 
     mock_url = mock_result
     assert mock_url == "https://github.com/mock_repo/pull/1", "pr URL is not correct."
+
+# Create PR failure case
+@patch("Ochestrization.gh_job.subprocess.run")
+def test_create_pr_failure(mock_run,repo_path):
+    mock_run.return_value= subprocess.CompletedProcess(
+        args=[], returncode=1,
+        stdout="",
+        stderr="PR already exists",
+    )
+    with pytest.raises(RuntimeError) as exc_info:
+        create_pr(repo_path, "mock_repo", "title", "body")
+    assert "PR already exists" in str(exc_info.value)
