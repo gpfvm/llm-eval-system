@@ -31,14 +31,17 @@ def get_issues(repo: str, label: str = "AI:ready") -> list[int]:
 
 
 def get_issue_content(repo: str, issue_num: int) -> dict:
-    """이슈 제목/본문을 가져온다. repo를 안 넘기면 현재 디렉토리 기준으로 동작해 예측 불가능해지므로 필수."""
-    result = subprocess.run(
-        ["gh", "issue", "view", str(issue_num), "--repo", repo, "--json", "title,body"],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    return json.loads(result.stdout)
+    try:
+        """이슈 제목/본문을 가져온다. repo를 안 넘기면 현재 디렉토리 기준으로 동작해 예측 불가능해지므로 필수."""
+        result = subprocess.run(
+            ["gh", "issue", "view", str(issue_num), "--repo", repo, "--json", "title,body"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return json.loads(result.stdout)
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"{issue_num} not found : {e.stderr}") from e
 
 
 # ---------- 2. repo 준비 ----------
