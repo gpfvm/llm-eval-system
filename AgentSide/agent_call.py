@@ -39,15 +39,17 @@ def invoke_cline(repo_path: Path, prompt: str, timeout: int = 900) -> str:
     try:
         result = subprocess.run(
             [
-                "cline",
+                "cline.cmd",
                 "-v",
                 "-P", "ollama",
                 "-m", "qwen3:8b",
                 prompt,
+                
             ],
             cwd=str(repo_path),
             text=True,
             timeout=timeout,
+            shell=False
         )
 
         logger.info("Cline finished: %s", result.returncode)

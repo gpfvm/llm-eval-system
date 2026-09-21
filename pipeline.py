@@ -24,7 +24,9 @@ def run_pipeline(repo: str, agent_name: str, model_name: str, issue_num: int) ->
         #Phas 2: Cline 연동
         # ================= call cline and write the acutal code =====================
 
+        
         prompt = build_prompt(issue)
+        print(repr(prompt))
         invoke_cline(path,prompt)
 
 
