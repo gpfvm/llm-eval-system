@@ -68,6 +68,26 @@ def test_branch_cut(repo_path):
     assert current_branch.stdout.strip() == branch_name
     
 
+
+#test_branch_cut_branch already exsists
+def test_branch_cut_branch_already(repo_path):
+    """
+    test case: Branch already exists on the path.
+    excute branch_cut function 
+    switch to main branch 
+    excute branch_cut function
+
+    rasises error "branch is already created"
+    """
+    branch_cut(repo_path,"temp","temp",1)
+    subprocess.run(
+            ["git", "-C", str(repo_path), "switch", "main"],
+            check=True,
+        )
+    with pytest.raises(RuntimeError):
+        branch_cut(repo_path,"temp","temp",1)
+
+
 #test_get_commit_sha and commmit_changes 
 def test_commit_and_diff(repo_path):
     filename = "AGENT_TEST.md"
@@ -82,6 +102,21 @@ def test_commit_and_diff(repo_path):
 
     assert filename in diff, "file should be shown in diff"
 
+
+# comit_changes failure case : no changes
+"""
+test case : attepmt to commit with no changes
+
+no changes on repo
+attempt to git add 
+attemp to git commit 
+should raise the error 
+
+"""
+def test_commit_changes_noChanges(repo_path):
+    with pytest.raises(RuntimeError):
+        commit_changes(repo_path,"#1: AGENT_TEST")
+
 #push_branch test 
 @patch("Ochestrization.gh_job.subprocess.run")
 def test_push_branch(mock_run,repo_path):
@@ -92,6 +127,25 @@ def test_push_branch(mock_run,repo_path):
         called_args= mock_run.call_args[0][0]
         assert "push" in called_args, "push command is not included"
         assert "mock_branch" in called_args, "branch name is incorrect"
+
+
+
+# push_branch _ No remote
+def test_push_branch_NoRemote(tmp_path):
+
+    """
+    Test Case : No clone or lost connection with origin 
+
+    create temp path 
+    excute only git init 
+    should raise error 
+    """
+    repo = tmp_path / "no_origin_repo"
+    subprocess.run( ["git", "init", str(repo)], check=True)
+
+    with pytest.raises(RuntimeError):
+        push_branch(repo, "some-branch")
+
 
 @patch("Ochestrization.gh_job.subprocess.run")
 def test_create_pr(mock_run,repo_path):

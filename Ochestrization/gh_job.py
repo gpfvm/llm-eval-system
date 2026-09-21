@@ -85,11 +85,14 @@ def sync_main(repo_path: Path) -> None:
 def branch_cut(repo_path: Path, agent_name: str, model_name: str, issue_num: int) -> str:
     """<Agent>_<Model>_issue# 브랜치를 만들고 이름을 반환."""
     branch_name = f"{agent_name}_{model_name}_issue{issue_num}"
-    subprocess.run(
-        ["git", "-C", str(repo_path), "checkout", "-b", branch_name],
-        check=True,
-    )
-    logger.info(f"Created branch {branch_name}")
+    try:
+        subprocess.run(
+            ["git", "-C", str(repo_path), "checkout", "-b", branch_name],
+            check=True,
+        )
+        logger.info(f"Created branch {branch_name}")
+    except subprocess.CalledProcessError as e: 
+         raise RuntimeError(f"{branch_name} already exists: {e.stderr}") from e
     return branch_name
 
 
@@ -124,19 +127,27 @@ def get_commit_sha(repo_path: Path) -> str:
 
 
 def commit_changes(repo_path: Path, message: str) -> str:
-    subprocess.run(
-        ["git", "add", "."],
-        cwd=repo_path,
-        check=True,
-    )
+    try:
+        subprocess.run(
+            ["git", "add", "."],
+            cwd=repo_path,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
 
-    subprocess.run(
-        ["git", "commit", "-m", message],
-        cwd=repo_path,
-        check=True,
-    )
-
-    return get_commit_sha(repo_path)
+        subprocess.run(
+            ["git", "commit", "-m", message],
+            cwd=repo_path,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return get_commit_sha(repo_path)
+    
+    except subprocess.CalledProcessError as e: 
+        raise RuntimeError(f"{e.stdout} {e.stderr}") from e
+    
 
 # ---------- 6. commit diff / changed files 수집 ----------
 
@@ -152,12 +163,15 @@ def get_commit_diff(repo_path: Path, commit_sha: str) -> str:
 
 
 def push_branch(repo_path: Path, branch_name: str) -> None:
-    subprocess.run(
-        ["git", "-C", str(repo_path), "push", "-u", "origin", branch_name],
-        check=True,
-    )
-    logger.info(f"Pushed branch {branch_name}")
-
+    try:
+        subprocess.run(
+            ["git", "-C", str(repo_path), "push", "-u", "origin", branch_name],
+            check=True,
+            capture_output=True,
+        )
+        logger.info(f"Pushed branch {branch_name}")
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"{e.stderr} {e.stdout}") from e
 
 # ---------- 7. PR 생성 ----------
 

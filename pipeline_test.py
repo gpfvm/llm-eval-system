@@ -57,7 +57,7 @@ def test_cleanup_path_none(repo_path):
             check=True,
         )
     
-    assert result.stdout.strip() == "test_branch"
+    assert result.stdout.strip() == branch_name
 
 def test_cleanup_branch_none(repo_path):
     branch_name = "test-branch"

@@ -36,23 +36,25 @@ def invoke_cline(repo_path: Path, prompt: str, timeout: int = 900) -> str:
     실제 변경 여부는 호출 후 get_changed_files()로 오케스트레이터가 확인한다.
     """
     logger.info("Starting Cline...")
+    try:
+        result = subprocess.run(
+            [
+                "cline",
+                "-v",
+                "-P", "ollama",
+                "-m", "qwen3:8b",
+                prompt,
+            ],
+            cwd=str(repo_path),
+            text=True,
+            timeout=timeout,
+        )
 
-    result = subprocess.run(
-        [
-            "cline",
-            "-v",
-            "-P", "ollama",
-            "-m", "qwen3:8b",
-            prompt,
-        ],
-        cwd=str(repo_path),
-        text=True,
-        timeout=timeout,
-    )
-
-    logger.info("Cline finished: %s", result.returncode)
-    
-    if result.returncode != 0:
-        raise RuntimeError(f"Cline invocation failed with return code {result.returncode}")
+        logger.info("Cline finished: %s", result.returncode)
+        
+        if result.returncode != 0:
+            raise RuntimeError(f"Cline invocation failed with return code {result.returncode}")
+    except subprocess.TimeoutExpired as e:
+        raise RuntimeError(f"Cline timed out after {timeout}s") from e
     logger.info("Cline finished")
     return result.stdout
