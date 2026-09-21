@@ -14,6 +14,12 @@ PARENT_DIR = PROJECT_ROOT.parent
 
 # ---------- 1. 이슈 조회 ----------
 
+#PR 확인해서 거기에 없는 이슈만 가져와야함... 모든 string 이 일치하는 것은 가져오면 안됨 흠 그럼 레이블을 때면 되는 거 아닌가? 
+ 
+#PR 에 만약 같은 이름의 이슈가 있다면 ? 
+
+
+
 def get_issues(repo: str, label: str = "AI:ready") -> list[int]:
     """label이 붙은 이슈 번호 목록을 가져온다."""
     try:
