@@ -13,10 +13,6 @@ def build_prompt(issue:dict):
     Get issue number, issue title, issue body
     """
     return textwrap.dedent(f"""
-            You are fixing a GitHub issue in this repository.
-
-            Issue title: {issue['title']}
-            Issue body:
             {issue['body']}
 
             Constraints:
@@ -40,7 +36,7 @@ def invoke_cline(repo_path: Path, prompt: str, timeout: int = 900) -> str:
         result = subprocess.run(
             [
                 "cline.cmd",
-                "-v",
+            
                 "-P", "ollama",
                 "-m", "qwen3:8b",
                 prompt,
