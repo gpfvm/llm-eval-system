@@ -45,7 +45,6 @@ def run_pipeline(repo: str, agent_name: str, model_name: str, issue_num: int) ->
 
         return {
             "commit_sha": SHA,
-            "diff": diff,
             "pr_url": pr_url,
         }
     except Exception as e:
